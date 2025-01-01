@@ -13,7 +13,7 @@ import SwiftData
 struct NotesApp: App {
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
-            Item.self,
+            Folder.self,
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 
@@ -23,11 +23,16 @@ struct NotesApp: App {
             fatalError("Could not create ModelContainer: \(error)")
         }
     }()
+    @State private var presentation = Presentation()
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            MainView()
+                .environment(presentation)
+                .frame(minWidth: design.minWindowWidth, minHeight: design.minWindowHeight)
         }
         .modelContainer(sharedModelContainer)
     }
 }
+
+fileprivate typealias design = Design.App
