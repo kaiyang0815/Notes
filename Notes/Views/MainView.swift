@@ -15,7 +15,7 @@ struct MainView: View {
     @State private var selection: String?
     @State private var showNewFolderSheet: Bool = false
     
-    @Query(sort: \Folder.name)
+    @Query
     var folders: [Folder]
     
     var body: some View {
@@ -23,25 +23,29 @@ struct MainView: View {
             NavigationStack {
                 List(selection: $selection) {
                     Section("iCloud", isExpanded: $showICloud) {
-                        ForEach(folders, id: \.id) { folder in
-                            NavigationLink {
-                                Text(folder.name)
-                            } label: {
-                                HStack {
-                                    Image(systemName: "folder")
-                                        .foregroundStyle(Color.accentColor)
-                                    Text(folder.name)
-                                }
-                                .badge(folder.notes.count)
-                                .padding(.trailing)
-                            }
-                            .buttonStyle(.plain)
+//                        ForEach(folders, id: \.id) { folder in
+//                            NavigationLink {
+//                                Text(folder.name)
+//                            } label: {
+//                                HStack {
+//                                    Image(systemName: "folder")
+//                                        .foregroundStyle(Color.accentColor)
+//                                    Text(folder.name)
+//                                }
+//                                .badge(folder.notes.count)
+//                                .padding(.trailing)
+//                            }
+//                            .buttonStyle(.plain)
+//                        }
+                        OutlineGroup(folders, children: \.subFolders) { folder in
+                            Text(folder.name)
                         }
                     }
                     .headerProminence(.standard)
                 }
                 .navigationTitle("Folders")
                 .toolbar {
+                    #if os(iOS)
                     ToolbarItem(placement: .bottomBar) {
                         Button {
                             withAnimation {
@@ -55,6 +59,7 @@ struct MainView: View {
                     ToolbarItem {
                         EditButton()
                     }
+                    #endif
                 }
                 .listStyle(.sidebar)
                 .sheet(isPresented: $showNewFolderSheet) {

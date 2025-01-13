@@ -13,6 +13,10 @@ struct NewFolderView: View {
     @State private var folderName = "New Folder"
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
+    @Query(filter: #Predicate<Folder> {
+        $0.parentFolder == nil
+    }, sort: \Folder.name)
+    var folders: [Folder]
     
     var body: some View {
         NavigationStack {
@@ -53,7 +57,9 @@ struct NewFolderView: View {
                 }
             }
             .navigationTitle(String(localized: "New Folder"))
+            #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
+            #endif
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button {
@@ -67,7 +73,7 @@ struct NewFolderView: View {
                 ToolbarItem(placement: .confirmationAction) {
                     Button {
                         withAnimation {
-                            let newFolder = Folder(name: folderName)
+                            let newFolder = Folder(name: folderName, order: folders.count)
                             modelContext.insert(newFolder)
                             dismiss()
                         }
