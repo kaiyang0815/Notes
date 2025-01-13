@@ -11,19 +11,156 @@ import SwiftUI
 struct NotesListView: View {
     @State private var searchNoteString = ""
 
-    @Query
-    var notes: [Note]
+    let folder: Folder
+
+    var todayNotes: [Note] {
+        return folder.notes.filter {
+            Calendar.current.isDateInToday($0.createdAt)
+        }
+    }
+
+    var previous7DNotes: [Note] {
+        let now = Date()
+        let sevenDaysAgo = Calendar.current.date(
+            byAdding: .day,
+            value: -7,
+            to: now
+        )!
+        return folder.notes.filter {
+            $0.createdAt >= sevenDaysAgo
+                && !Calendar.current.isDateInToday($0.createdAt)
+        }
+    }
+
+    var previous30DNotes: [Note] {
+        let now = Date()
+        let thirtyDaysAgo = Calendar.current.date(
+            byAdding: .day,
+            value: -30,
+            to: now
+        )!
+        let sevenDaysAgo = Calendar.current.date(
+            byAdding: .day,
+            value: -7,
+            to: now
+        )!
+        return folder.notes.filter {
+            $0.createdAt >= thirtyDaysAgo
+                && $0.createdAt < sevenDaysAgo
+        }
+    }
+
+    var previousYearNotes: [Note] {
+        let currentYear = Calendar.current.component(.year, from: Date())
+        let previousYear = currentYear - 1
+        return folder.notes.filter {
+            let noteYear = Calendar.current.component(.year, from: $0.createdAt)
+            return noteYear == previousYear
+        }
+    }
+    
+    var previousYear: String {
+        let currentYear = Calendar.current.component(.year, from: Date())
+        return String(currentYear - 1)
+    }
+
+    init(_ folder: Folder) {
+        self.folder = folder
+    }
 
     var body: some View {
         NavigationStack {
             List {
-                ForEach(notes) { note in
-                    Text(note.title)
+                Section("Today") {
+                    ForEach(todayNotes) { note in
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text(note.title)
+                                .font(.headline)
+                            Text(
+                                note.createdAt.formatted(
+                                    date: .numeric, time: .shortened)
+                            )
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            HStack {
+                                Image(systemName: "folder")
+                                Text(folder.name)
+                            }
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        }
+                    }
+                }
+                if !previous7DNotes.isEmpty {
+                    Section("Previous 7 Days") {
+                        ForEach(previous7DNotes) { note in
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text(note.title)
+                                    .font(.headline)
+                                Text(
+                                    note.createdAt.formatted(
+                                        date: .numeric, time: .shortened)
+                                )
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                                HStack {
+                                    Image(systemName: "folder")
+                                    Text(folder.name)
+                                }
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                            }
+                        }
+                    }
+                }
+                if !previous30DNotes.isEmpty {
+                    Section("Previous 30 Days") {
+                        ForEach(previous30DNotes) { note in
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text(note.title)
+                                    .font(.headline)
+                                Text(
+                                    note.createdAt.formatted(
+                                        date: .numeric, time: .shortened)
+                                )
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                                HStack {
+                                    Image(systemName: "folder")
+                                    Text(folder.name)
+                                }
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                            }
+                        }
+                    }
+                }
+                if !previousYearNotes.isEmpty {
+                    Section(previousYear) {
+                        ForEach(previousYearNotes) { note in
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text(note.title)
+                                    .font(.headline)
+                                Text(
+                                    note.createdAt.formatted(
+                                        date: .numeric, time: .shortened)
+                                )
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                                HStack {
+                                    Image(systemName: "folder")
+                                    Text(folder.name)
+                                }
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                            }
+                        }
+                    }
                 }
             }
-            .navigationTitle("Notes")
-            #if os (iOS)
-            .listStyle(.insetGrouped)
+            .navigationTitle(folder.name)
+            #if os(iOS)
+                .listStyle(.insetGrouped)
             #endif
             .searchable(text: $searchNoteString)
             .toolbar {
@@ -53,7 +190,7 @@ struct NotesListView: View {
                     }
                 }
                 ToolbarItem(placement: .status) {
-                    Text("30 Notes")
+                    Text("^[\(folder.notes.count) Note](inflect: true)")
                         .font(.caption)
 
                 }
@@ -63,5 +200,5 @@ struct NotesListView: View {
 }
 
 #Preview(traits: .previewData) {
-    NotesListView()
+    NotesListView(SampleData.folder1)
 }

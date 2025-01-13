@@ -33,24 +33,3 @@ final class Folder {
         self.notes = notes
     }
 }
-
-@Model
-final class Note {
-    var id: UUID
-    var title: String
-    var content: String
-    @Relationship(deleteRule: .cascade, inverse: \Folder.notes)
-    var folder: Folder?
-
-    init(
-        id: UUID = UUID(),
-        title: String,
-        content: String,
-        folder: Folder? = nil
-    ) {
-        self.id = id
-        self.title = title
-        self.content = content
-        self.folder = folder
-    }
-}

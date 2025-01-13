@@ -73,7 +73,7 @@ struct NewFolderView: View {
                 ToolbarItem(placement: .confirmationAction) {
                     Button {
                         withAnimation {
-                            let newFolder = Folder(name: folderName, order: folders.count)
+                            let newFolder = Folder(name: folderName, order: folders.count, subFolders: [])
                             modelContext.insert(newFolder)
                             dismiss()
                         }
