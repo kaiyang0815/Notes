@@ -9,12 +9,17 @@ import SwiftData
 import SwiftUI
 
 struct NotesListView: View {
+    
+    @Environment(\.modelContext) private var modelContext
+
     @State private var searchNoteString = ""
 
-    let folder: Folder
+    let selectedFolder: Folder
+
+    @Binding var selectedNote: Note?
 
     var todayNotes: [Note] {
-        return folder.notes.filter {
+        return selectedFolder.notes.filter {
             Calendar.current.isDateInToday($0.createdAt)
         }
     }
@@ -26,7 +31,7 @@ struct NotesListView: View {
             value: -7,
             to: now
         )!
-        return folder.notes.filter {
+        return selectedFolder.notes.filter {
             $0.createdAt >= sevenDaysAgo
                 && !Calendar.current.isDateInToday($0.createdAt)
         }
@@ -44,7 +49,7 @@ struct NotesListView: View {
             value: -7,
             to: now
         )!
-        return folder.notes.filter {
+        return selectedFolder.notes.filter {
             $0.createdAt >= thirtyDaysAgo
                 && $0.createdAt < sevenDaysAgo
         }
@@ -53,7 +58,7 @@ struct NotesListView: View {
     var previousYearNotes: [Note] {
         let currentYear = Calendar.current.component(.year, from: Date())
         let previousYear = currentYear - 1
-        return folder.notes.filter {
+        return selectedFolder.notes.filter {
             let noteYear = Calendar.current.component(.year, from: $0.createdAt)
             return noteYear == previousYear
         }
@@ -64,36 +69,12 @@ struct NotesListView: View {
         return String(currentYear - 1)
     }
 
-    init(_ folder: Folder) {
-        self.folder = folder
-    }
-
     var body: some View {
         NavigationStack {
-            List {
-                Section("Today") {
+            List(selection: $selectedNote) {
+                Section {
                     ForEach(todayNotes) { note in
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text(note.title)
-                                .font(.headline)
-                            Text(
-                                note.createdAt.formatted(
-                                    date: .numeric, time: .shortened)
-                            )
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                            HStack {
-                                Image(systemName: "folder")
-                                Text(folder.name)
-                            }
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                        }
-                    }
-                }
-                if !previous7DNotes.isEmpty {
-                    Section("Previous 7 Days") {
-                        ForEach(previous7DNotes) { note in
+                        NavigationLink(value: note) {
                             VStack(alignment: .leading, spacing: 8) {
                                 Text(note.title)
                                     .font(.headline)
@@ -105,16 +86,57 @@ struct NotesListView: View {
                                 .foregroundStyle(.secondary)
                                 HStack {
                                     Image(systemName: "folder")
-                                    Text(folder.name)
+                                    Text(selectedFolder.name)
                                 }
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                             }
                         }
+                        .buttonStyle(.plain)
+                    }
+                } header: {
+                    HStack {
+                        Text("Today")
+                            .font(.headline)
+                            .textCase(nil)
+                        Spacer()
+                    }
+                    .foregroundStyle(.primary)
+                }
+                if !previous7DNotes.isEmpty {
+                    Section {
+                        ForEach(previous7DNotes) { note in
+                            NavigationLink(value: note) {
+                                VStack(alignment: .leading, spacing: 8) {
+                                    Text(note.title)
+                                        .font(.headline)
+                                    Text(
+                                        note.createdAt.formatted(
+                                            date: .numeric, time: .shortened)
+                                    )
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                    HStack {
+                                        Image(systemName: "folder")
+                                        Text(selectedFolder.name)
+                                    }
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                }
+                            }
+                        }
+                    } header: {
+                        HStack {
+                            Text("Previous 7 Days")
+                                .font(.headline)
+                                .textCase(nil)
+                            Spacer()
+                        }
+                        .foregroundStyle(.primary)
                     }
                 }
                 if !previous30DNotes.isEmpty {
-                    Section("Previous 30 Days") {
+                    Section {
                         ForEach(previous30DNotes) { note in
                             VStack(alignment: .leading, spacing: 8) {
                                 Text(note.title)
@@ -127,16 +149,24 @@ struct NotesListView: View {
                                 .foregroundStyle(.secondary)
                                 HStack {
                                     Image(systemName: "folder")
-                                    Text(folder.name)
+                                    Text(selectedFolder.name)
                                 }
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                             }
                         }
+                    } header: {
+                        HStack {
+                            Text("Previous 30 Days")
+                                .font(.headline)
+                                .textCase(nil)
+                            Spacer()
+                        }
+                        .foregroundStyle(.primary)
                     }
                 }
                 if !previousYearNotes.isEmpty {
-                    Section(previousYear) {
+                    Section {
                         ForEach(previousYearNotes) { note in
                             VStack(alignment: .leading, spacing: 8) {
                                 Text(note.title)
@@ -149,16 +179,25 @@ struct NotesListView: View {
                                 .foregroundStyle(.secondary)
                                 HStack {
                                     Image(systemName: "folder")
-                                    Text(folder.name)
+                                    Text(selectedFolder.name)
                                 }
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                             }
                         }
+                    } header: {
+                        HStack {
+                            Text(previousYear)
+                                .font(.headline)
+                                .textCase(nil)
+                            Spacer()
+                        }
+                        .foregroundStyle(.primary)
                     }
                 }
             }
-            .navigationTitle(folder.name)
+            .listSectionSpacing(8)
+            .navigationTitle(selectedFolder.name)
             #if os(iOS)
                 .listStyle(.insetGrouped)
             #endif
@@ -189,10 +228,21 @@ struct NotesListView: View {
                         Label("More", systemImage: "ellipsis.circle")
                     }
                 }
-                ToolbarItem(placement: .status) {
-                    Text("^[\(folder.notes.count) Note](inflect: true)")
+                ToolbarItemGroup(placement: .bottomBar) {
+                    Spacer()
+                    Text("^[\(selectedFolder.notes.count) Note](inflect: true)")
                         .font(.caption)
-
+                    Spacer()
+                    Button {
+                        let newNote = Note(title: "Default", content: "")
+                        modelContext.insert(newNote)
+                        selectedFolder.notes.append(newNote)
+                        selectedNote = newNote
+                    } label: {
+                        Label(
+                            "New note",
+                            systemImage: "square.and.pencil")
+                    }
                 }
             }
         }
@@ -200,5 +250,5 @@ struct NotesListView: View {
 }
 
 #Preview(traits: .previewData) {
-    NotesListView(SampleData.folder1)
+    MainView()
 }

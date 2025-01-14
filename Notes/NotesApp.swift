@@ -28,7 +28,7 @@ struct NotesApp: App {
         WindowGroup {
             MainView()
                 .environment(presentation)
-                #if os(!iOS)
+                #if !os(iOS)
                     .frame(minWidth: design.minWindowWidth, minHeight: design.minWindowHeight)
                 #endif
         }

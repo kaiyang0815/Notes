@@ -124,13 +124,13 @@ struct MainView: View {
             }
         } content: {
             if let selectedFolder {
-                NotesListView(selectedFolder)
+                NotesListView(selectedFolder: selectedFolder, selectedNote: $selectedNote)
             }
         } detail: {
             if let selectedNote {
                 NavigationStack {
                     ScrollView {
-                        Text(selectedNote.content)
+                        Text(selectedNote.title)
                     }
                 }
             }

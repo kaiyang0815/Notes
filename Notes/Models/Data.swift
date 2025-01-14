@@ -46,18 +46,40 @@ extension SampleData {
         subFolders: [
             Folder(
                 name: "Folder4", order: 3,
-                notes: [Note(title: "Note 3", content: ""), Note(title: "Note 4", content: "")])
+                notes: [
+                    Note(title: "Note 3", content: ""),
+                    Note(title: "Note 4", content: ""),
+                ])
         ])
-    @MainActor static let folder2 = Folder(name: "Folder2", order: 1, subFolders: [])
-    @MainActor static let folder3 = Folder(name: "Folder3", order: 2, subFolders: [])
+    @MainActor static let folder2 = Folder(
+        name: "Folder2", order: 1, subFolders: [])
+    @MainActor static let folder3 = Folder(
+        name: "Folder3", order: 2, subFolders: [])
 
     @MainActor static let folders = [folder1, folder2, folder3]
 
     @MainActor static let notes = [
-        Note(title: "Note 1", content: "", folder: folders[2]),
-        Note(title: "Note 2", content: "", folder: folders[0]),
         Note(
-            title: "Note 5", content: "", createdAt: DateHelper.shared.createDate(2024, 1, 1),
-            folder: folders[0]),
+            title: "Note 1",
+            content: "",
+            folder: folders[2]
+        ),
+        Note(
+            title: "Note 2",
+            content: "",
+            folder: folders[0]
+        ),
+        Note(
+            title: "Note 5",
+            content: "",
+            createdAt: DateHelper.shared.createDate(2024, 1, 1),
+            folder: folders[0]
+        ),
+        Note(
+            title: "Note 6",
+            content: "",
+            createdAt: DateHelper.shared.createDate(2025, 1, 12),
+            folder: folders[0]
+        ),
     ]
 }
