@@ -58,7 +58,7 @@ struct NotesListView: View {
             return noteYear == previousYear
         }
     }
-    
+
     var previousYear: String {
         let currentYear = Calendar.current.component(.year, from: Date())
         return String(currentYear - 1)

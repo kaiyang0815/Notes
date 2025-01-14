@@ -5,19 +5,19 @@
 // Copyright © 2025 Kaiyang0815.
 // All Rights Reserved.
 
-
-import SwiftUI
 import SwiftData
+import SwiftUI
 
 struct NewFolderView: View {
     @State private var folderName = "New Folder"
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
-    @Query(filter: #Predicate<Folder> {
-        $0.parentFolder == nil
-    }, sort: \Folder.name)
+    @Query(
+        filter: #Predicate<Folder> {
+            $0.parentFolder == nil
+        }, sort: \Folder.name)
     var folders: [Folder]
-    
+
     var body: some View {
         NavigationStack {
             Form {
@@ -33,7 +33,7 @@ struct NewFolderView: View {
                             .buttonStyle(.plain)
                         }
                     }
-                
+
                 Section {
                     NavigationLink {
                         Text("Make Into Smart Folder")
@@ -50,7 +50,7 @@ struct NewFolderView: View {
                                 Text(String(localized: "Make Into Smart Folder"))
                                 Text(String(localized: "Organise using tags and other filters"))
                                     .font(.caption)
-//                                    .foregroundStyle(.secondary)
+                                //                                    .foregroundStyle(.secondary)
                             }
                         }
                     }
@@ -58,7 +58,7 @@ struct NewFolderView: View {
             }
             .navigationTitle(String(localized: "New Folder"))
             #if os(iOS)
-            .navigationBarTitleDisplayMode(.inline)
+                .navigationBarTitleDisplayMode(.inline)
             #endif
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -73,7 +73,8 @@ struct NewFolderView: View {
                 ToolbarItem(placement: .confirmationAction) {
                     Button {
                         withAnimation {
-                            let newFolder = Folder(name: folderName, order: folders.count, subFolders: [])
+                            let newFolder = Folder(
+                                name: folderName, order: folders.count, subFolders: [])
                             modelContext.insert(newFolder)
                             dismiss()
                         }
